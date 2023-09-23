@@ -487,4 +487,80 @@ You can check with SonarQube console to see the results
 
 <img width="943" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/1493a0b7-38ec-4acb-b922-5d403f6277cb">
 
+Step -7: Create a SonarQube Webhook
+
+Navigate to SonarQube console - Administration - Webhook - Create
+
+<img width="791" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/33260f78-4488-40d0-916e-aa10de1d07c3">
+
+Create a file called as QualityGateStatus.groovy inside a var folder in jenkins shared lib folder
+
+	def call(){
+        	waitForQualityGate abortPipeline: false, credentialsId: 'sonar-api'
+        	}
+
+save and exit the code - Then push this code to jenkins shared lib repo.
+
+Now Update the Jenkinsfile with QualityGateStatus stage
+
+		@Library('my-shared-lib') _
+
+		pipeline{
+        		agent any
+
+        		parameters{
+                		choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        		}
+        		stages{
+                		stage('Git Checkout'){
+                               	        when { expression {  params.action == 'create' } }
+                        		steps{
+                        			gitCheckout(
+                                			branch: "main",
+                            				url: "https://github.com/kohlidevops/java-app.git"
+                                        		)
+                       	 			}
+                		}
+                	stage('Unit Test with Maven'){
+                        	               when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                        		mvnTest()
+                                        		}
+                                		}
+                        		}
+                	stage('Integration Test with Maven'){
+                        	                when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                                	mvnIntegrationTest()
+                                        		}
+                                		}
+                        		}
+                	stage('Static Code Analysis with SonarQube'){
+                         	               when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                                	statiCodeAnalysis()
+                                        		}
+                                		}
+                        		}
+                	stage('Code Quality Status Check with SonarQube'){
+                         	               when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                        		QualityGateStatus()
+                                        	}
+                                	}
+                        	}
+                	}
+        	}
+
+save and exit - Then push the code to repo. Then start the build.
+
+Yes build has been succeeded. 
+
+<img width="500" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/eea0b4dc-8f1a-4802-ab22-cafaff0288cc">
+
+<img width="932" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/393dd7d5-4f10-48ed-ac19-ba5a08eac347">
 
