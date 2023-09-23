@@ -146,7 +146,7 @@ Then Apply and save. Now back to Jenkinsfile and update the code.
 					steps{
 						script{
 							gitCheckout{
-								branch: "main"
+								branch: "main",
 								url: "https://github.com/kohlidevops/java-app.git"
 							}
 						}
@@ -212,5 +212,52 @@ Like below, to add the PAC.
 
 <img width="632" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/2e30eeb9-23f7-4474-95ed-fe1efb9cd2ea">
 
+Now start the build - Its succeeded - So its working perfect with Jenkins shared library.
 
+<img width="841" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/ddd75c49-8ad4-43d4-87d7-a3de7c49d0db">
+
+Step -2: Create a Unit Testing stage
+
+First install the maven in Jenkins server to unit test the code using below commands.
+
+		sudo apt update -y
+		sudo apt install maven -y
+		mvn -version
+  
+Go to your local system and select jenkins shared library repo and create one file called as mvnTest.groovy
+
+		def call() {
+			sh 'mvn test'
+			}
+
+save and exit - Then push the code to repo.
+
+<img width="468" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/236814ff-522d-483b-b6e6-3eb3209f75e9">
+
+To update the Unit Test staging in Jenkins file
+
+		@Library('my-shared-lib') _
+
+		pipeline{
+        		agent any
+        		stages{
+                		stage('Git Checkout'){
+                        		steps{
+                        		gitCheckout(
+                        			branch: "main",
+                            			url: "https://github.com/kohlidevops/java-app.git"
+                                        	)
+                        		}
+                		}
+                		stage('Unit Test with Maven'){
+                			steps{
+                				script{
+                					mvnTest()
+                				}
+                			}
+                		}
+        		}
+		}
+
+  save and exit - Then push the code to java-app repo. Then start the build.
   
