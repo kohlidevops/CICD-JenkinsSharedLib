@@ -156,4 +156,61 @@ Then Apply and save. Now back to Jenkinsfile and update the code.
 		}
 
   save and exit - Then puch this code to your java-app.
+
+  Let's create one repo for jekins shared library and clone this repo in locla system. After cloning, create one folder known as vars. Inside the vars folder create one file called as gitCheckout.groovy.
+
+		vi gitCheckout.groovy
+
+  		def call(Map stageParams) {
+			checkout([
+				$class: 'GitSCM',
+				branches: [[ name: stageParams.branch ]],
+				userRemoteConfigs: [[ url: stageParams.url]]
+			])
+		}
+
+  save and exit. Then push the code to repository.
+  
+<img width="563" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/f47f561e-c5b4-47af-9d68-ee713a5ed980">
+
+As of now, just configure the jenkins shared library repo URL to jenkins UI.
+
+Navigate to Jenkins - Manage Jenkins - Configure system - Global pipeline libraries.
+
+<img width="920" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/4b96cfe8-0ed9-4058-a008-f6fc9d839918">
+
+<img width="839" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/7a53632c-7ce6-40fd-801f-210058c0f731">
+
+Then Apply and save. Now back to Jenkinsfile and update the code.
+
+  		@Library('my-shared-lib') _
+		pipeline{
+			agent any
+			stages{
+				stage('Git Checkout'){
+					steps{
+						script{
+							gitCheckout{
+								branch: "main",
+								url: "https://github.com/kohlidevops/java-app.git"
+							}
+						}
+					}
+				}
+			}
+		}
+
+save and exit - Then puch this code to your java-app. Remember - "@Library('my-shared-lib') _" Its refer the name which is declared in Jenkins - Manage Jenkins - system - Global Pipeline Libraries
+
+<img width="545" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/35c3a3c0-2070-4d92-80df-1ece873d14aa">
+
+I just create a PAC in GitHub repository - GitHub - Profile - Settings - Developer Settings - Generate PAC with expiration. Then copy paste the token in Jenkins - Manage Jenkins -System - Global pipeline libraries - add this token with GitHub URL to avoid below error.
+
+<img width="671" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/00591e95-9461-41a0-9ad7-39c953bae059">
+
+Like below, to add the PAC.
+
+<img width="632" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/2e30eeb9-23f7-4474-95ed-fe1efb9cd2ea">
+
+
   
