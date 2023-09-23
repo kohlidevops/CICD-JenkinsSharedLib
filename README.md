@@ -50,10 +50,17 @@ Jenkins installation has been completed. Now SSH to machine and check the SonarQ
 
         $docker container ls
 
-Yup! Its up and running.
+Yup! Its up and running with host port 9000.
 
 <img width="897" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/277c2d20-4ebe-4f7f-8017-d3e6bca76a5d">
 
+Now I'm going to configure SonarQube in browser.
+
+<img width="631" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/37dbdf7c-40fb-462e-a216-b0f63e9079ac">
+
+Default user name is admin and password is admin. Then change the password as you want.
+
+<img width="929" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/7c7bdec9-9066-4c7f-8590-2a63fabb91dd">
 
 
 
