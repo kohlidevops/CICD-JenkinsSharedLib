@@ -62,5 +62,37 @@ Default user name is admin and password is admin. Then change the password as yo
 
 <img width="929" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/7c7bdec9-9066-4c7f-8590-2a63fabb91dd">
 
+Then create a GitHub repo and using below link to push the java app codes.
 
+        https://github.com/kohlidevops/java-app.git
 
+Now Create one project item with pipeline in Jenkins UI
+
+<img width="767" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/154fd0b5-9e80-4358-bda8-7d5d75b8bc7a">
+
+Using pipeline syntax to create a first stage that is Git Checkout.
+
+<img width="793" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/8596a92b-ca14-4b58-90d1-d5e96d0ab742">
+
+After generating the scripts
+
+        git branch: 'main', url: 'https://github.com/kohlidevops/java-app.git'
+
+Lets create a Jenkinsfile in your project repo in local system.
+
+<img width="519" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/1cb023a1-7a42-4beb-88f3-67cbe00ed30e">
+
+Jenkins file for Git Checkout
+
+        pipeline{
+	        agent any
+	        stages{
+		        stage('Git Checkout'){
+			        steps{
+				        script{
+					        git branch: 'main', url: 'https://github.com/kohlidevops/java-app.git'
+				        }
+			        }
+		        }
+	        }
+        }
