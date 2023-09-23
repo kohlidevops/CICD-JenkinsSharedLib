@@ -96,3 +96,64 @@ Jenkins file for Git Checkout
 		        }
 	        }
         }
+
+Select your project in Jenkins UI and select the Pipeline 
+
+<img width="866" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/bac95f3c-bc21-4e05-8297-542841435269">
+
+<img width="715" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/ce6be341-baf9-4390-9a4a-217353e8016d">
+
+Then Apply and save - To start the build.
+
+<img width="851" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/da0a6ca3-7dda-460a-afe8-0f1f6c586fa9">
+
+Yes! The build has been succeeded. Just have a look at the Jenkins server workspace.
+
+<img width="442" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/cb8bbeab-df4e-4ad6-8a57-8901fcaf7db6">
+
+Now, I'm going to use Jenkins Shared Library which is used to configure Git Check and all the stages and this one is reusable.
+
+Let's create one repo for jekins shared library and clone this repo in locla system. After cloning, create one folder known as vars. Inside the vars folder create one file called as gitCheckout.groovy.
+
+		vi gitCheckout.groovy
+
+  		def call(Map stageParams) {
+			checkout([
+				$class: 'GitSCM',
+				branches: [[ name: stageParams.branch ]],
+				userRemoteConfigs: [[ url: stageParams.url]]
+			])
+		}
+
+  save and exit. Then push the code to repository.
+  
+<img width="563" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/f47f561e-c5b4-47af-9d68-ee713a5ed980">
+
+As of now, just configure the jenkins shared library repo URL to jenkins UI.
+
+Navigate to Jenkins - Manage Jenkins - Configure system - Global pipeline libraries.
+
+<img width="920" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/4b96cfe8-0ed9-4058-a008-f6fc9d839918">
+
+<img width="839" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/7a53632c-7ce6-40fd-801f-210058c0f731">
+
+Then Apply and save. Now back to Jenkinsfile and update the code.
+
+		pipeline{
+			agent any
+			stages{
+				stage('Git Checkout'){
+					steps{
+						script{
+							gitCheckout{
+								branch: "main"
+								url: "https://github.com/kohlidevops/java-app.git"
+							}
+						}
+					}
+				}
+			}
+		}
+
+  save and exit - Then puch this code to your java-app.
+  
