@@ -326,3 +326,165 @@ save and exit - Then push the code to java-app repo. Then start the build.
 
 The build has been succeeded with maven integration testing stage.
 
+Step -4: Configure Condition Stage
+
+Now I'm going to add "Condition Stage" for Jenkins. This condition stage will run the particular stage based on user choice.
+
+Just update the Jenkinsfile like below
+
+		@Library('my-shared-lib') _
+
+		pipeline{
+        		agent any
+
+        		parameters{
+        			choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        		}
+        		stages{
+                		stage('Git Checkout'){
+                				when { expression {  params.action == 'create' } }
+                        		steps{
+                        		gitCheckout(
+                        			branch: "main",
+                            			url: "https://github.com/kohlidevops/java-app.git"
+                                        		)
+                        		}
+                		}
+                		stage('Unit Test with Maven'){
+                				when { expression {  params.action == 'create' } }
+                			steps{
+                				script{
+                					mvnTest()
+                					}
+                				}
+                			}
+                		stage('Integration Test with Maven'){
+                				when { expression {  params.action == 'create' } }
+                			steps{
+                				script{
+                					mvnIntegrationTest()
+                					}
+                				}
+                			}                
+        			}
+			}
+
+Save and exit - Then start the build. - Working fine.
+
+Step -5: Generate Token in SonarQube console
+
+Login to SonarQube console - select - Administration - Security - Users - Administrator - create a token
+
+<img width="879" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/144ee0e9-4f36-49b6-b86e-d51d118e483f">
+
+copy it and will use later.
+
+Step -6: Configure SonarQube in Jenkins
+
+Jenkins - Manage Jenkins - Plugins - Install below plugins
+
+		SonarQube Scanner
+  		Sonar Gerrit
+    		SonarQube Generic Coverage
+      		Sonar Quality Gates
+		Quality Gates
+
+Then install without restart.
+
+Jenkins - Manage Jenkins - System - Sonar Qube Servers
+
+<img width="725" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/51fcff8e-9131-4ebe-9885-e3ab64d4a2b5">
+
+Apply and save.
+
+Again Jenkins - Manage Jenkins - System - SonarQube servers
+
+<img width="747" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/1e627d63-cbe3-4e69-bac6-d6264e553660">
+
+Copy paste the Token ID in Secret text then save.
+
+<img width="700" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/04f1f85e-a718-44d7-aca0-2623d61d5d9a">
+
+Then select the authentication token from the drop down list.
+
+<img width="773" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/b5a28273-e359-444a-89c4-a1bd3cd960b9">
+
+Then Apply & Save.
+
+Step -7: Create Static Code Analysis stage with SonarQube
+
+Go to pipeline syntax and create a syntax for sonar-api token
+
+<img width="822" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/fbf0e147-c29f-4723-aac1-5e0f61130fb7">
+
+Naigate to local system - jenkins shared lib repo - inside vars folder create a file called as statiCodeAnalysis.groovy
+
+		def call(){
+       			 withSonarQubeEnv(credentialsId: 'sonar-api') {
+                		sh 'mvn clean package sonar:sonar'
+                                                }
+        		}
+
+
+save & exit - Then push the code to remote repo.
+
+To update the Jenkinsfile for StatiCodeAnalysis
+
+@Library('my-shared-lib') _
+
+pipeline{
+        agent any
+
+        parameters{
+        	choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        }
+        stages{
+                stage('Git Checkout'){
+                			when { expression {  params.action == 'create' } }
+                        steps{
+                        gitCheckout(
+                        	branch: "main",
+                            url: "https://github.com/kohlidevops/java-app.git"
+                                        )
+                        }
+                }
+                stage('Unit Test with Maven'){
+                			when { expression {  params.action == 'create' } }
+                		steps{
+                			script{
+                			mvnTest()
+                			}
+                		}
+                	}
+                stage('Integration Test with Maven'){
+                			when { expression {  params.action == 'create' } }
+                		steps{
+                			script{
+                				mvnIntegrationTest()
+                			}
+                		}
+                	}
+                 stage('Static Code Analysis with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                statiCodeAnalysis()
+                                        }
+                                }
+                        }                
+        	}
+	}
+
+save and exit - Then push the code to remote repo. Then start the build with parameters.
+
+<img width="692" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/f7cce9a6-328a-4779-8269-c5841e2c7867">
+
+Yes build has been succeeded.
+
+<img width="890" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/49f7b471-23dc-4703-b12d-efd4d6ffe456">
+
+You can check with SonarQube console to see the results
+
+<img width="943" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/1493a0b7-38ec-4acb-b922-5d403f6277cb">
+
+
