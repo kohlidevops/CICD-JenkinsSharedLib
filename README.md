@@ -259,5 +259,70 @@ To update the Unit Test staging in Jenkins file
         		}
 		}
 
-  save and exit - Then push the code to java-app repo. Then start the build.
+  save and exit - Then push the code to java-app repo. Then start the build. 
+
+  It may this build get failed due to java version. 
+
+##  If any facing issue with - maven (Failed to execute goal  [32morg.apache.maven.plugins:maven-compiler-plugin:3.8.1:compile [m  [1m(default-compile) [m on project  [36mkubernetes-configmap-reload [m:  [1;31mFatal error compiling [m: java.lang.ExceptionInInitializerError:), then follow command to resolve the issues.
+
+		First u check your java version or mvn -v - it will list also java version
+		$mvn -v
+		If java version is 17, then install java 11
+		$sudo apt install openjdk-11-jre -y
+
+		To change the default java version
+		$sudo update-alternatives --config java
+
+		Then check java version
+		$java -version
+
+now you start the build. It should success. It seems version dependecies.
   
+Step -3: To configure the Maven Integration Testing stage
+
+Go to local systems and navigate to jenkins shared library repo and inside the vars directory create one file is called as mvnIntegrationTest.groovy
+
+		def call(){
+			sh 'mvn verify -DskipUnitTests'
+		}
+
+save and exit - Then push the code to remote repo.
+
+Then update the Jenkins file to call mvnIntegrationTest.groovy
+
+		@Library('my-shared-lib') _
+
+		pipeline{
+        		agent any
+        		stages{
+                		stage('Git Checkout'){
+                        		steps{
+                        		gitCheckout(
+                        			branch: "main",
+                            			url: "https://github.com/kohlidevops/java-app.git"
+                                        	)
+                        		}
+                		}
+                	stage('Unit Test with Maven'){
+                		steps{
+                			script{
+                				mvnTest()
+                			}
+                		}
+                	}
+                	stage('Integration Test with Maven'){
+                		steps{
+                			script{
+                				mvnIntegrationTest()
+                				}
+                			}
+                		}                
+        		}
+		}
+
+save and exit - Then push the code to java-app repo. Then start the build.
+
+<img width="768" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/07170d11-0729-463e-9656-a4127513133d">
+
+The build has been succeeded with maven integration testing stage.
+
