@@ -1190,3 +1190,64 @@ The Images has been pushed to Amazon Elastic Container Registry.
 
 <img width="960" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/89ddd09f-b53a-48f7-bbf5-33143a875dd9">
 
+Step -17: To Create EKS cluster using Terraform module
+
+eks-module available in same repo.
+
+First create IAM Accesskey and secretkey then configure in Jenkins - Manage jenkins - Credentials - Add - secret text - create for both AWS_ACCESS_KEY_ID and AWS_SECRET_KEY_ID.
+
+<img width="869" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/e87b51bc-d982-46b1-9226-fc6d0a3cdfa9">
+
+Then update environment vailable in Jenkinsfile-ECR
+
+		environment{
+        		ACCESS_KEY = credentials('AWS_ACCESS_KEY_ID')
+        		SECRET_KEY = credentials('AWS_SECRET_KEY_ID')
+    			}
+
+save and exit - Then push this code to java app repo. Then start the build.
+
+Please make ensure Terraform has been installed in Jenkins server.
+
+  		https://tecadmin.net/how-to-install-terraform-on-ubuntu/
+
+Please use below link to copy paste the Jenkinsfile-ECR
+
+		https://github.com/kohlidevops/java-app/blob/main/Jenkinsfile-ECR
+
+Build has been succeeded.
+
+<img width="959" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/2e8f705e-544a-47d2-b6c4-2cb08bd7bd9e">
+
+The Elastic Kubernetes Service has been created with Terrafor tool.
+
+<img width="871" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/aca42372-1392-4fe6-b6df-a2f5b55df119">
+
+Step -18: Connect to EKS Cluster Stage
+
+Please use below link to copy paste the Jenkinsfile-ECR
+
+		https://github.com/kohlidevops/java-app/blob/main/Jenkinsfile-ECR
+
+save and exit - Then start the build.
+
+<img width="958" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/a434e008-34ab-4a11-8aa1-dba06d9bde26">
+
+The build has been succeeded.
+
+<img width="753" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/a92f0e27-14d5-4707-a494-eee727ae4341">
+
+Step -19: Deploy on EKS Cluster
+
+Install kubectl in Jenkins Server
+
+		sudo snap install kubectl --classic
+
+Please use below link to copy paste the Jenkinsfile-ECR
+
+save and exit - Then push the code to java app repo. Then start the build
+
+Ready to Deploy Button
+
+<img width="951" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/9d471bdf-52fc-45ea-ab34-1b48be3aabbc">
+
