@@ -1251,3 +1251,20 @@ Ready to Deploy Button
 
 <img width="951" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/9d471bdf-52fc-45ea-ab34-1b48be3aabbc">
 
+If you facing issue with below error
+
+	error: exec plugin: invalid apiVersion "client.authentication.k8s.io/v1alpha1"
+
+ Then issue below command
+
+	curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+	unzip awscliv2.zip
+	sudo ./aws/install --update
+ 	mv ~/.kube/config ~/.kube/config.bk
+	aws eks update-kubeconfig --region ${AWS_REGION}  --name ${EKS_CLUSTER_NAME}
+
+The build has been suceeded. 
+
+<img width="926" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/6aea737d-c058-41da-aaaf-419498637b0a">
+
+That's it.
