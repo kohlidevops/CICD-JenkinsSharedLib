@@ -997,3 +997,175 @@ Build has been succeeded and just have a look at the docker hub repo.
 
 <img width="926" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/cbb0fb18-37bd-4e62-b261-1e459bc2d8f2">
 
+Step -13: Docker Cleanup Stage in Jenkins Server
+
+To Create a dockerImageCleanup.groovy file
+
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as dockerImageCleanup.groovy.
+
+		def call(){
+        		sh "docker rmi latchudevops/javapp:v1"
+        		sh "docker rmi latchudevops/javapp:latest"	
+			}
+
+save and exit - Then push this code jenkins shared lib repo.
+
+Now, Update the Jenkinsfile to call dockerImageCleanup.groovy call.
+
+		@Library('my-shared-lib') _
+		pipeline{
+        	agent any
+        		parameters{
+                		choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        			}
+        	stages{
+                	stage('Git Checkout'){
+                                       when { expression {  params.action == 'create' } }
+                        steps{
+                        	gitCheckout(
+                                	branch: "main",
+                            		url: "https://github.com/kohlidevops/java-app.git"
+                                        )
+                        	}
+                	}
+                stage('Unit Test with Maven'){
+                                     when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        	mvnTest()
+                                        }
+                                }
+                        }
+                stage('Integration Test with Maven'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                mvnIntegrationTest()
+                                        }
+                                }
+                        }
+                stage('Static Code Analysis with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                statiCodeAnalysis()
+                                        }
+                                }
+                        }
+                stage('Code Quality Status Check with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        	QualityGateStatus()
+                                        }
+                                }
+                        }
+                stage('Maven Build Stage'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        	mvnBuild()
+                                        }
+                                }
+                        }
+                stage('Docker Image Build'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                   				dockerBuild()
+               					}
+            				}
+        			}
+        	stage('Docker Image Scanning'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                				dockerImageScan()
+               					}
+            				}
+        			}
+        	stage('Docker Image Push'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                   				dockerImagePush()
+               					}
+            				}
+        			}
+	   	stage('Docker Image Cleanup'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                   				dockerImageCleanup()
+               					}
+            				}
+        			}
+            	   	}
+        	}
+
+save and exit - Then push this code to java app repo. Then start the build.
+
+Yes Build has been succeeded. 
+
+Step -13: Docker Image Push to Amazon Elastic Container Registry (ECR)
+
+we can use same code (but upto Maven Build stage) which we used in Jenkinsfile. Now Im going to create Jenkinsfile-ECR in java app repo.
+
+Just use below link to copy/paste Jenkinsfile-ECR 		
+
++++
++++
+
+save and exit - save as Jenkinsfile-ECR in java app repo.
+
+To Create ECR repo in Amazon
+
+Navigate to AWS console and select - ECR
+
+<img width="622" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/d28d5be2-3056-431b-a76f-aa2f7fa07f54">
+
+just leave others as default.
+
+<img width="789" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/c3dd2749-a8c6-4cdf-b687-567b8b21f610">
+
+ECR has been created.
+
+Step -14: Docker Image Build, Scan and Push in Amazon ECR
+
+To Create a dockerBuildECR.groovy file
+
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as dockerBuildECR.groovy.
+
+		def call(){
+        		sh """
+        		docker build -t latchudevops .
+        		docker tag latchudevops:latest 1234567890.dkr.ecr.ap-south-1.amazonaws.com/latchudevops:latest
+        		"""
+			}
+
+save and exit - Then push this code to jenkins shared lib
+
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as dockerImageScanECR.groovy.
+
+		def call(){
+        		sh """
+        		trivy image 1234567890.dkr.ecr.ap-south-1.amazonaws.com/latchudevops:latest > scan.txt
+        		cat scan.txt
+        		"""
+			}
+
+save and exit - Then push this code to jenkins shared lib
+
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as dockerImagePushECR.groovy.
+
+		def call(){
+        		sh """
+        		aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 1234567890.dkr.ecr.ap-south-1.amazonaws.com
+	  		docker push 1234567890.dkr.ecr.ap-south-1.amazonaws.com/latchudevops:latest
+        		"""
+			}
+
+save and exit - Then push this code to jenkins shared lib
+
+
+
