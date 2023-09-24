@@ -751,4 +751,249 @@ Yes, Build has been succeeded and you can check the docker images in Jenkins ser
 
 <img width="645" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/6c04f411-d719-49b2-9eec-781fa8ef4f98">
 
-Step -11: 
+Step -11: To Create a Scan Docker Image stage
+
+First need to install a Trivy app to scan a Docker image in Jenkins Server. Trivy is a Simple and Comprehensive Vulnerability Scanner for Containers and other Artifacts and it is Suitable for Continuous Integration and Continuous Deployment.
+
+SSH to Jenkins server and install below commands.
+
+		#!/bin/bash
+		sudo apt-get install wget apt-transport-https gnupg lsb-release
+		wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+		echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+		sudo apt-get update
+		sudo apt-get install trivy
+  		trivy
+
+To Create a dockerScanImage.groovy file
+
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as dockerScanImage.groovy.
+
+		def call(){
+			sh """
+        		trivy image latchudevops/javapp:latest > scan.txt
+        		cat scan.txt
+        		"""
+		}
+
+save and exit - Then push this code to jenkins shared lib
+
+Now create a Jenkinsfile for dockerImageScan call
+
+		@Library('my-shared-lib') _
+
+		pipeline{
+        	agent any
+        	parameters{
+                	choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        		}
+        	stages{
+                	stage('Git Checkout'){
+                                        when { expression {  params.action == 'create' } }
+                        	steps{
+                        		gitCheckout(
+                                		branch: "main",
+                            			url: "https://github.com/kohlidevops/java-app.git"
+                                        	)
+                        		}	
+                		}
+                stage('Unit Test with Maven'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                    	                    mvnTest()
+                         	               }
+                                	}
+                        	}
+                stage('Integration Test with Maven'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                mvnIntegrationTest()
+                               		         }
+                                	}
+                        	}
+                stage('Static Code Analysis with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                statiCodeAnalysis()
+                                	        }
+                                	}
+                        	}
+                stage('Code Quality Status Check with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        	QualityGateStatus()
+                                        	}
+                                	}
+                        	}
+                stage('Maven Build Stage'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        	mvnBuild()
+                                        	}
+                                	}
+                        	}
+                stage('Docker Image Build'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                   				dockerBuild()
+               					}
+            				}
+        			}
+        	stage('Docker Image Scanning'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                				dockerImageScan()
+               					}
+            				}
+        			}
+            		}
+        	}
+
+Save and exit - Then push the code to java app repo. Then start the build.
+
+<img width="953" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/98b9ed45-2256-4550-8974-69d7f6e33c5f">
+
+The build has been succeeded and you can see the scanning vulnerability in Jenkins build console output.
+
+<img width="911" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/db446d2a-b107-4bc7-aa69-70d7cb4d9d0f">
+
+Step -12: To Create a Docker Image Push Stage
+
+Go to Jenkins console - pipeline syntax
+
+<img width="711" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/70c5df3b-876f-46aa-903a-19d2bd5e0de1">
+
+select - username and password - Add Jenkins
+
+<img width="655" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/f2ee99cd-2ae9-48f5-9964-0c6a1eb2c10a">
+
+<img width="710" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/95ec9b2e-75c1-40f1-95a7-b02809a8580a">
+
+Provide user and password vailable
+
+<img width="697" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/09f4d026-748d-42f3-a601-a16059a3e81e">
+
+Now generate a Syntax.
+
+To Create a dockerImagePush.groovy file
+
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as dockerImagePush.groovy.
+
+		def call(){
+        		withCredentials([usernamePassword(
+                		credentialsId: 'docker_hub_password',
+                		passwordVariable: 'PASSWORD',
+                		usernameVariable: 'USER'
+        		)]) {
+        		sh "docker login -u '$USER' -p '$PASSWORD'"
+        			}
+        		sh "docker image push latchudevops/javapp:v1"
+        		sh "docker image push latchudevops/javapp:latest"
+			}
+
+save ans exit - Then push this code to jenkins shared lib repo.
+
+Now update the Jenkinsfile to call dockerImagePush.groovy file
+
+		@Library('my-shared-lib') _
+		pipeline{
+        	agent any
+        		parameters{
+                		choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        			}
+        	stages{
+                	stage('Git Checkout'){
+                                       when { expression {  params.action == 'create' } }
+                        steps{
+                        	gitCheckout(
+                                	branch: "main",
+                            		url: "https://github.com/kohlidevops/java-app.git"
+                                        )
+                        	}
+                	}
+                stage('Unit Test with Maven'){
+                                     when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        	mvnTest()
+                                        }
+                                }
+                        }
+                stage('Integration Test with Maven'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                mvnIntegrationTest()
+                                        }
+                                }
+                        }
+                stage('Static Code Analysis with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                statiCodeAnalysis()
+                                        }
+                                }
+                        }
+                stage('Code Quality Status Check with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        	QualityGateStatus()
+                                        }
+                                }
+                        }
+                stage('Maven Build Stage'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        	mvnBuild()
+                                        }
+                                }
+                        }
+                stage('Docker Image Build'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                   				dockerBuild()
+               					}
+            				}
+        			}
+        	stage('Docker Image Scanning'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                				dockerImageScan()
+               					}
+            				}
+        			}
+        	stage('Docker Image Push'){
+         				when { expression {  params.action == 'create' } }
+            			steps{
+               				script{
+                   				dockerImagePush()
+               					}
+            				}
+        			}
+            	   	}
+        	}
+  
+save and exit - Then push this code to java app repo
+
+Then start the build and check the docker hub repo whether the image is pushed or not.
+
+<img width="951" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/c01b190e-bf4c-43d7-8d57-ca4a101d3f21">
+
+Build has been succeeded and just have a look at the docker hub repo.
+
+<img width="937" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/d0bf9dfa-049c-44ce-b5ee-1cbd74d6a8d1">
+
+<img width="926" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/cbb0fb18-37bd-4e62-b261-1e459bc2d8f2">
+
