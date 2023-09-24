@@ -638,3 +638,111 @@ To update the Jenkinsfile for mvnBuild stage
 
 save and exit - Then push the code to java app repo. Then start the build in Jenkins.
 
+<img width="944" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/5bf3562e-c69f-4eda-b9d7-f447f74c355b">
+
+Perfect! The Maven BUild has been succeeded and artifact (jar) file is created. You can check the Jar file 
+
+Select - Your last Build - workspace - click link - target folder - .jar file is available.
+
+<img width="868" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/55e8404c-2c8e-4cd7-8797-40f191f66948">
+
+Step -9: Create a Dockerfile
+
+Create this Dockerfile in your java-app root folder.
+
+To create a Dockerfile to copy a jar file from target directory to local folder app
+
+		FROM openjdk:8-jdk-alpine
+		WORKDIR /app
+		COPY ./target/*.jar /app.jar
+		CMD ["java", "-jar", "app.jar"]
+
+save abd exit - Then push this docker file to java-app repo.
+
+Step -10: To create a docker build stage
+
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as dockerBuild.groovy.
+
+		def call(){
+        		sh """
+        		docker image build -t latchudevops/javapp .
+        		docker image tag latchudevops/javapp latchudevops/javapp:v1
+        		docker image tag latchudevops/javapp latchudevops/javapp:latest
+        		"""
+			}
+
+save and exit - Then push this code to jenkins shared lib repo.
+
+Now update the Jenkinsfile to call dockerBuild stage
+
+		@Library('my-shared-lib') _
+
+		pipeline{
+        		agent any
+        			parameters{
+                			choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+                  			}
+        		stages{
+                		stage('Git Checkout'){
+                                        when { expression {  params.action == 'create' } }
+                        	steps{
+                        		gitCheckout(
+                                		branch: "main",
+                            			url: "https://github.com/kohlidevops/java-app.git"
+                                        		)
+                        		}
+                		}
+                	stage('Unit Test with Maven'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                        mvnTest()
+                                        }
+                                }
+                        }
+                	stage('Integration Test with Maven'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                mvnIntegrationTest()
+                                        }
+                                }
+                        }
+                	stage('Static Code Analysis with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                statiCodeAnalysis()
+                                        }
+                                }
+                        }
+                	stage('Code Quality Status Check with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                QualityGateStatus()
+                                        }
+                                }
+                        }
+                	stage('Maven Build Stage'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                mvnBuild()
+                                        }
+                                }
+                        }
+                	stage('Docker Image Build'){
+                                        when { expression {  params.action == 'create' } }
+                                steps{
+                                        script{
+                                                dockerBuild()
+                                        }
+                                }
+                        	}
+                	}
+       	 	}
+
+save and exit - Then push this code to java repo
+
+Step -11: 
