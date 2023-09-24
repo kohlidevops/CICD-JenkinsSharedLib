@@ -743,6 +743,12 @@ Now update the Jenkinsfile to call dockerBuild stage
                 	}
        	 	}
 
-save and exit - Then push this code to java repo
+save and exit - Then push this code to java repo. Then start the build.
+
+<img width="945" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/1e88cec1-435c-48b7-9b48-8da4684eb072">
+
+Yes, Build has been succeeded and you can check the docker images in Jenkins server.
+
+<img width="645" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/6c04f411-d719-49b2-9eec-781fa8ef4f98">
 
 Step -11: 
