@@ -1166,5 +1166,27 @@ Navigate to local system - jenkins shared lib repo - inside vars folder create a
 
 save and exit - Then push this code to jenkins shared lib
 
+Step -15: To configure AWS in Jenkins
 
+		sudo apt install awscli -y
+
+Create an IAM Role - Trusted Entity as EC2 and Policy could be ECR full access and create IAM ROle
+
+Associate this IAM Role to Jenkins Server
+
+Step -16: To Create a new Pipeline Job in Jenkins
+
+<img width="863" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/f07fcc60-0ed6-4df0-a8ba-8594180fc7b2">
+
+<img width="759" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/d3a7e6fc-a2f8-4192-9277-31500a205b8b">
+
+Apply and save - Then start the build.
+
+Yes, Build has been succeeded.
+
+<img width="949" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/a8eb7614-4b4a-4767-8b1d-b7e995b215ca">
+
+The Images has been pushed to Amazon Elastic Container Registry.
+
+<img width="960" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/89ddd09f-b53a-48f7-bbf5-33143a875dd9">
 
