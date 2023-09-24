@@ -1113,8 +1113,7 @@ we can use same code (but upto Maven Build stage) which we used in Jenkinsfile. 
 
 Just use below link to copy/paste Jenkinsfile-ECR 		
 
-+++
-+++
+		https://github.com/kohlidevops/java-app/blob/main/Jenkinsfile-ECR
 
 save and exit - save as Jenkinsfile-ECR in java app repo.
 
