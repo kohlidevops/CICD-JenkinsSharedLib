@@ -417,7 +417,7 @@ Go to pipeline syntax and create a syntax for sonar-api token
 
 <img width="822" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/fbf0e147-c29f-4723-aac1-5e0f61130fb7">
 
-Naigate to local system - jenkins shared lib repo - inside vars folder create a file called as statiCodeAnalysis.groovy
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as statiCodeAnalysis.groovy
 
 		def call(){
        			 withSonarQubeEnv(credentialsId: 'sonar-api') {
@@ -563,4 +563,78 @@ Yes build has been succeeded.
 <img width="500" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/eea0b4dc-8f1a-4802-ab22-cafaff0288cc">
 
 <img width="932" alt="image" src="https://github.com/kohlidevops/CICD-JenkinsSharedLib/assets/100069489/393dd7d5-4f10-48ed-ac19-ba5a08eac347">
+
+Step -8: Create a Maven Build Stage
+
+Navigate to local system - jenkins shared lib repo - inside vars folder create a file called as mvnBuild.groovy.
+
+		def call(){
+			sh 'mvn clean install'
+			}
+
+save and exit - Then push the code to jenkins shared lib repo
+
+To update the Jenkinsfile for mvnBuild stage
+
+		@Library('my-shared-lib') _
+
+		pipeline{
+        		agent any
+        		parameters{
+                		choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        		}
+        		stages{
+                		stage('Git Checkout'){
+                                 	       when { expression {  params.action == 'create' } }
+                        		steps{
+                        			gitCheckout(
+                                			branch: "main",
+                            				url: "https://github.com/kohlidevops/java-app.git"
+                                        		)
+                        		}
+                		}
+                	stage('Unit Test with Maven'){
+                                        when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                        		mvnTest()
+                                        		}
+                                		}
+                        		}
+                	stage('Integration Test with Maven'){
+                         	        when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                                	mvnIntegrationTest()
+                                        		}
+                                		}
+                        		}
+                	stage('Static Code Analysis with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                                	statiCodeAnalysis()
+                                        	}
+                                	}
+                        	}
+                	stage('Code Quality Status Check with SonarQube'){
+                                        when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                        		QualityGateStatus()
+                                        	}
+                                	}
+                        	}
+                	stage('Maven Build Stage'){
+                                        when { expression {  params.action == 'create' } }
+                                	steps{
+                                        	script{
+                                        		mvnBuild()
+                                        	}
+                                	}
+                        	}
+                	}
+        	}
+
+save and exit - Then push the code to java app repo. Then start the build in Jenkins.
 
